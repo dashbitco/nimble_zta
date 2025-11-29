@@ -1,4 +1,4 @@
-defmodule NimbleTOTP.MixProject do
+defmodule NimbleZTA.MixProject do
   use Mix.Project
 
   @version "0.1.0-dev"
@@ -18,7 +18,7 @@ defmodule NimbleTOTP.MixProject do
         "Add Zero Trust Authentication (ZTA) to web apps running in your private cloud",
 
       # Docs
-      name: "NimbleTOTP",
+      name: "NimbleZTA",
       docs: docs()
     ]
   end

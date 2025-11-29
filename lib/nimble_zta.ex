@@ -1,6 +1,7 @@
 defmodule NimbleZTA do
   @moduledoc """
-  Enable zero-trust authentication within your Plug/Phoenix application.
+  Enable Zero Trust Authentication within your Plug/Phoenix application,
+  mostly geared towards internal applications.
 
   The following ZTA providers are supported:
 
