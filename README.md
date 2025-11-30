@@ -1,8 +1,8 @@
 # NimbleZTA
 
-This library allows web developers to enable Zero Trust Authentication (ZTA) in their Plug/Phoenix web apps, mostly geared towards internal applications. In a nutshell, if you are running applications inside your private cloud, you can use your cloud provider to identify and control access to your app, so you can focus on your application logic.
+Add [Zero Trust](https://learn.microsoft.com/en-us/security/zero-trust/zero-trust-overview) Authentication (ZTA) to your Plug/Phoenix web apps. In a nutshell, if you are running applications inside your private cloud, you can use your cloud provider to identify and control access to your app, so you can focus on your application logic.
 
-CloudFlare, Google Cloud Platform, and Tailscale are currently supported. Read the docs for more information: https://hexdocs.pm/nimble_zta.
+`nimble_zta` is a collection of strategies for different providers. CloudFlare, Google Cloud Platform, and Tailscale are currently supported, with additional HTTP Basic Auth and Pass Through strategies available for development and testing. [Read the docs for more information](https://hexdocs.pm/nimble_zta).
 
 [This library was extracted from Livebook](https://livebook.dev/).
 
