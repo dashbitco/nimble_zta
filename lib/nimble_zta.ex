@@ -49,6 +49,8 @@ defmodule NimbleZTA do
 
   @type name :: atom()
 
+  @type access_type :: :full | :apps
+
   @typedoc """
   A metadata of keys returned by zero-trust authentication provider.
 
@@ -70,7 +72,7 @@ defmodule NimbleZTA do
           optional(:name) => String.t(),
           optional(:email) => String.t(),
           optional(:avatar_url) => String.t() | nil,
-          optional(:access_type) => Livebook.Users.User.access_type(),
+          optional(:access_type) => access_type(),
           optional(:groups) => list(map()),
           optional(:payload) => map()
         }
