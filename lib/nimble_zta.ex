@@ -29,7 +29,7 @@ defmodule NimbleZTA do
       plug :zta
 
       def zta(conn, _opts) do
-        case NimbleZTA.GoogleIAP.authenticate(conn, :google_iap) do
+        case NimbleZTA.GoogleIAP.authenticate(:google_iap, conn) do
           # The provider is redirecting somewhere for follow up
           {%{halted: true} = conn, nil} ->
             conn
