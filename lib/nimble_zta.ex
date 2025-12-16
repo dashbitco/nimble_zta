@@ -49,8 +49,6 @@ defmodule NimbleZTA do
 
   @type name :: atom()
 
-  @type access_type :: :full | :apps
-
   @typedoc """
   A metadata of keys returned by zero-trust authentication provider.
 
