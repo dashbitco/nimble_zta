@@ -60,7 +60,6 @@ defmodule NimbleZTA do
     * `:name` - the user name
     * `:email` - the user email
     * `:avatar_url` - the user avatar
-    * `:access_type` - the user access type
     * `:groups` - the user groups
     * `:payload` - the provider payload
 
@@ -72,7 +71,6 @@ defmodule NimbleZTA do
           optional(:name) => String.t(),
           optional(:email) => String.t(),
           optional(:avatar_url) => String.t() | nil,
-          optional(:access_type) => access_type(),
           optional(:groups) => list(map()),
           optional(:payload) => map()
         }
