@@ -10,7 +10,7 @@ defmodule NimbleZTA.Tailscale do
   Plug you want to enable this authentication.
 
   You make sure the `tailscale` CLI is installed and available on your machine
-  (or your containers) and the you can point to its socket, typically at
+  (or your containers) and then you can point to its socket, typically at
   `/var/run/tailscale/tailscaled.sock`.
 
   For more information on how Tailscale authentication works,
