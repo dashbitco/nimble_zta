@@ -42,7 +42,6 @@ defmodule NimbleZTA.Cloudflare do
     "common_name" => :client_id,
     "strategy" => :strategy
   }
-  @service_token_keys MapSet.new(["aud", "common_name", "exp", "iat", "iss", "sub", "type"])
 
   @doc false
   defstruct [:req_options, :identity, :name]
@@ -95,7 +94,7 @@ defmodule NimbleZTA.Cloudflare do
   defp verify_token(token, keys) do
     Enum.find_value(keys, :error, fn key ->
       case JOSE.JWT.verify(key, token) do
-        {true, token, _s} -> {:ok, token}
+        {_, token, _s} -> {:ok, token}
         _ -> nil
       end
     end)
@@ -105,15 +104,25 @@ defmodule NimbleZTA.Cloudflare do
   defp verify_iss(_, _), do: :error
 
   defp get_metadata(token, encoded_token, url) do
-    if MapSet.equal?(MapSet.new(Map.keys(token.fields)), @service_token_keys) do
-      {:ok, Map.put(token.fields, "strategy", "service_token")}
-    else
-      cookie = "CF_Authorization=#{encoded_token}"
-      resp = Req.request!(url: url, headers: [cookie: cookie])
+    case token.fields do
+      %{
+        "aud" => _,
+        "common_name" => _,
+        "exp" => _,
+        "iat" => _,
+        "iss" => _,
+        "sub" => _,
+        "type" => _
+      } ->
+        {:ok, Map.put(token.fields, "strategy", "service_token")}
 
-      if resp.status == 200,
-        do: {:ok, Map.put(resp.body, "strategy", "user_identity")},
-        else: :error
+      _ ->
+        cookie = "CF_Authorization=#{encoded_token}"
+        resp = Req.request!(url: url, headers: [cookie: cookie])
+
+        if resp.status == 200,
+          do: {:ok, Map.put(resp.body, "strategy", "user_identity")},
+          else: :error
     end
   end
 
