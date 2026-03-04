@@ -23,7 +23,7 @@ defmodule NimbleZTA.CloudflareTest do
       "kid" => "bmlyt6y2uWrgWeUh3mENiSkEOR7Np3I8swSjlK98iX0",
       "alg" => "RS256",
       "n" =>
-        "qvMgmj7GrjMAKxib9ODcdNyMwhsU1jwjvyAANrCJ5n1UcM82lZ5B3YP13zbPY3vRuufkW_GuA2cEZ8htMGT79kMsPz1cLrwIeUNOdGzncQQvBJVmQgw8NOuflVy5OajvfSe4a5PQmpC6BEp1d-Ix0S4BV2vWJUb0UtHg3bM4GgHTrnhHkSyXfpSZT4SNqnSOtiXiD-7lue52cPlZotkeTR2D4LTVSrsCdp21wGvAxXqnfpRcKYs5EyEmyTQ85zak7nBAReMrAqrRilXej8qTWGGIg1TRILvoCMd3nF5QjcjRCx2JMMHXG4tZNoK4QbEQlsdcd45B1VpE15TwgNTx4Q"
+        "rKACsPICtiNC5V3IGvTatP6aaqyxjhKvAr5LXzUsMyqUBI3FjzuTvL8xfmc_uw2WIh6ltQfhxEEFrQygnmgmk4eM6xTI2j-O3hgcQ4FBAoiii3IlVRV-bjZWTI5uQe7nkjML8ruGKjPovCP-tcbAEKKrzd9DnKdxlyOmFVrrEQvJ_rSssdy_ugl79LHZD0sG9d6y77mfQHQ3W9zrcvC5P8rHzYuMB6DmZZn2SHVgb4WRqblXqnOQG70xGM70Zfr4Y2jRl0tabIvTBQqiQBFDdPZSB4I1Cz74GlBWYftFzJITFtAatbfyrzieS__ctDmP_PLT_o544zKHrQK2uNSJvw"
     }
 
     conn
@@ -67,12 +67,27 @@ defmodule NimbleZTA.CloudflareTest do
     end
   end
 
+  def router_with_service_token_auth(conn, _opts) do
+    case conn.request_path do
+      "/certs" ->
+        json_key(conn, nil)
+
+      "/user_identity" ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(400, JSON.encode!(%{"err" => "could not retrieve identity"}))
+    end
+  end
+
   @moduletag bypass: &__MODULE__.router/2
   setup {TestHelper, :bypass}
 
+  @identity_based_signed_jwt "eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJsaXZlYm9va3dlYiIsImVtYWlsIjoidHVrYUBwZXJhbHRhLmNvbSIsImlhdCI6MTUxNjIzOTAyMiwiaXNzIjoibGl2ZWJvb2siLCJzdWIiOiIxMjM0NTY3ODkwIn0.C-Z-pYBL2QStyHkfxLHdbgqM4xG9XqLLQjZh5McUoDgo9P6ZhPoNTtwkr-n9LxN-9Ds509d3KCAJnzudECyVroqsCwRf57ksfktbLfi87twbNob94lByYizszHpjxniHCp8NjrTLfsOhuZq7GTK5-lsTEccUqh_q1lew2Mjbm6gFp4_PAcKQ3nVwU2OYybPjV2G3JCIeBk9aXRheEW1vBcAwXwIEHgB0S2LEN1zOs1pOmiOneAFkrJy872UuUOxEjDvMcHQYq7SEzaKyq2ypcwLJPs8r9qBa2inaVvXvxiKf3DzORSI7SvafA2oILzQesOpSdWHf0c-V3Mt7SKNCcQ"
+
+  @service_token_based_signed_jwt "eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiIxMjM0NTY3ODkwIiwiY29tbW9uX25hbWUiOiJjbGllbnRfaWQuYWNjZXNzIiwiZXhwIjoxNTE2MjM5MDIyLCJpYXQiOjE1MTYyMzkwMjIsImlzcyI6ImxpdmVib29rIiwic3ViIjoiIiwidHlwZSI6ImFwcCJ9.HYb6jwm_sHmvX8AnGAm0nQTLs9rjlaRE-X905Ns5FotnVMZcsxifeESH_d-fske_trdLp1HFi3GivxXZepzJqITKcA3749aig363wL2viQ4P2-_fNgzc1122F-5YgobhxV23Y_Ic_ncgiFtQFJeDcF0A8TN_nVMWPc4Jer7RWqC1jAuDrA7UUMtKEbLAQbS5-ZmdPrnkQMKgb93rc4B_yxn7aX10jh5L2d3FbdC-vqX6m4gpgeZMJJkNyCHBzxK67DgeIO6HZM3VCjOLX-DLWsDxfNIRZW64rXdwL333k7LCTKOB4Js2e5B2eS4yjAP5IGAknU2YvwXVTRwTFp8AuQ"
+
   setup context do
-    token =
-      "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiJ0dWthQHBlcmFsdGEuY29tIiwiaWF0IjoxNTE2MjM5MDIyLCJpc3MiOiJsaXZlYm9vayIsImF1ZCI6ImxpdmVib29rd2ViIn0.ZP5LIrkfMHq2p8g3SMgC7RBt7899GeHkP9rzYKM3RvjDCBeYoxpeioLW2sXMT74QyJPxB4JUujRU3shSPIWNAxkjJVaBGwVTqsO_PR34DSx82q45qSkUnkSVXLl-2KgN4BoUUK7dmocP6yzhNQ3XGf6669n5UG69eMZdh9PApZ7GuyRUQ80ubpvakWaIpd9PIaORkptqDWVbyOIk3Z79AMUub0MSG1FpzYByAQoLswob24l2xVo95-aQrdatqLk1sJ43AZ6HLoMxkZkWobYYRMH5w65MkQckJ9NzI3Rk-VOUlg9ePo8OPRnvcGY-OozHXrjdzn2-j03xuP6x1J3Y7Q"
+    token = Map.get(context, :token, @identity_based_signed_jwt)
 
     options = [
       name: @name,
@@ -92,7 +107,13 @@ defmodule NimbleZTA.CloudflareTest do
     start_supervised!({Cloudflare, options})
     {_conn, user} = Cloudflare.authenticate(@name, conn, fields: @fields)
 
-    assert %{id: "1234567890", email: "tuka@peralta.com", name: "Tuka Peralta", payload: %{}} =
+    assert %{
+             id: "1234567890",
+             email: "tuka@peralta.com",
+             name: "Tuka Peralta",
+             strategy: "user_identity",
+             payload: %{}
+           } =
              user
   end
 
@@ -126,6 +147,31 @@ defmodule NimbleZTA.CloudflareTest do
 
   @tag bypass: &__MODULE__.router_with_invalid_key/2
   test "returns nil when the key is invalid", %{options: options, conn: conn} do
+    start_supervised!({Cloudflare, options})
+    assert {_conn, nil} = Cloudflare.authenticate(@name, conn, fields: @fields)
+  end
+
+  @tag token: @service_token_based_signed_jwt,
+       bypass: &__MODULE__.router_with_service_token_auth/2
+  test "returns the JWT fields when the service token is valid", %{options: options, conn: conn} do
+    start_supervised!({Cloudflare, options})
+    assert {_conn, metadata} = Cloudflare.authenticate(@name, conn)
+    assert %{client_id: "client_id.access", strategy: "service_token", payload: %{}} = metadata
+  end
+
+  @tag token: @service_token_based_signed_jwt,
+       bypass: &__MODULE__.router_with_service_token_auth/2
+  test "returns nil when the service token is invalid", %{options: options} do
+    conn = conn(:get, "/") |> put_req_header("cf-access-jwt-assertion", "invalid_token")
+    start_supervised!({Cloudflare, options})
+    assert {_conn, nil} = Cloudflare.authenticate(@name, conn, fields: @fields)
+  end
+
+  @tag token: @service_token_based_signed_jwt,
+       bypass: &__MODULE__.router_with_service_token_auth/2
+  test "returns nil when the `iss` mismatches", %{options: options, conn: conn} do
+    invalid_identity = Map.replace(options[:custom_identity], :iss, "invalid_iss")
+    options = Keyword.put(options, :custom_identity, invalid_identity)
     start_supervised!({Cloudflare, options})
     assert {_conn, nil} = Cloudflare.authenticate(@name, conn, fields: @fields)
   end

@@ -59,6 +59,8 @@ defmodule NimbleZTA do
     * `:email` - the user email
     * `:avatar_url` - the user avatar
     * `:groups` - the user groups
+    * `:client_id` - the service token auth client_id **(Only supported by Cloudflare implementation)**
+    * `:strategy` - the authentication strategy either `user_identity` or `service_token` **(Only supported by Cloudflare implementation)**
     * `:payload` - the provider payload
 
   Note that none of the keys are required. The metadata returned depends
@@ -70,6 +72,8 @@ defmodule NimbleZTA do
           optional(:email) => String.t(),
           optional(:avatar_url) => String.t() | nil,
           optional(:groups) => list(map()),
+          optional(:client_id) => String.t(),
+          optional(:strategy) => String.t(),
           optional(:payload) => map()
         }
 

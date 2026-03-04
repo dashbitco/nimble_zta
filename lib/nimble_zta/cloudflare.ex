@@ -12,6 +12,18 @@ defmodule NimbleZTA.Cloudflare do
   The identity key is your team name. For more details about how to find yours,
   see: https://developers.cloudflare.com/cloudflare-one/glossary/#team-name.
 
+  Cloudflare supports two types of authentication:
+
+    * User identity authentication - where the user is authenticated by Cloudflare
+      and the provider returns the user metadata. This is the default authentication
+      strategy.
+      Reference: https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/application-token/#identity-based-authentication
+
+    * Service token authentication - where the provider returns a service token
+      metadata with a `client_id` field instead of user metadata. This is used
+      for machine-to-machine authentication.
+      Reference: https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/application-token/#service-token-authentication
+
   For more information about Cloudflare Zero Trust,
   see: https://developers.cloudflare.com/cloudflare-one/.
   """
@@ -23,7 +35,14 @@ defmodule NimbleZTA.Cloudflare do
 
   @assertion "cf-access-jwt-assertion"
   @renew_after 24 * 60 * 60 * 1000
-  @fields %{"user_uuid" => :id, "name" => :name, "email" => :email}
+  @fields %{
+    "user_uuid" => :id,
+    "name" => :name,
+    "email" => :email,
+    "common_name" => :client_id,
+    "strategy" => :strategy
+  }
+  @service_token_keys MapSet.new(["aud", "common_name", "exp", "iat", "iss", "sub", "type"])
 
   @doc false
   defstruct [:req_options, :identity, :name]
@@ -66,8 +85,8 @@ defmodule NimbleZTA.Cloudflare do
     with [encoded_token] <- token,
          {:ok, token} <- verify_token(encoded_token, keys),
          :ok <- verify_iss(token, identity.iss),
-         {:ok, user} <- get_user_identity(encoded_token, identity.user_identity) do
-      for({k, v} <- user, new_k = @fields[k], do: {new_k, v}, into: %{payload: user})
+         {:ok, metadata} <- get_metadata(token, encoded_token, identity.user_identity) do
+      for({k, v} <- metadata, new_k = @fields[k], do: {new_k, v}, into: %{payload: metadata})
     else
       _ -> nil
     end
@@ -85,10 +104,17 @@ defmodule NimbleZTA.Cloudflare do
   defp verify_iss(%{fields: %{"iss" => iss}}, iss), do: :ok
   defp verify_iss(_, _), do: :error
 
-  defp get_user_identity(token, url) do
-    cookie = "CF_Authorization=#{token}"
-    resp = Req.request!(url: url, headers: [cookie: cookie])
-    if resp.status == 200, do: {:ok, resp.body}, else: :error
+  defp get_metadata(token, encoded_token, url) do
+    if MapSet.equal?(MapSet.new(Map.keys(token.fields)), @service_token_keys) do
+      {:ok, Map.put(token.fields, "strategy", "service_token")}
+    else
+      cookie = "CF_Authorization=#{encoded_token}"
+      resp = Req.request!(url: url, headers: [cookie: cookie])
+
+      if resp.status == 200,
+        do: {:ok, Map.put(resp.body, "strategy", "user_identity")},
+        else: :error
+    end
   end
 
   defp identity(key) do
