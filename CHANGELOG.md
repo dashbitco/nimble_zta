@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.2 (2026-03-07)
+
+### Enhancements
+
+* Add Cloudflare service token authentication support
+
 ## v0.1.1 (2025-12-16)
 
 ### Bug fixes
