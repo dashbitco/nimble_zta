@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.3 (2026-09-24)
+
+### Security fix
+
+* Fix token bypass in Cloudflare service token authentication support
+
 ## v0.1.2 (2026-03-07)
 
 ### Enhancements
