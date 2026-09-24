@@ -94,7 +94,7 @@ defmodule NimbleZTA.Cloudflare do
   defp verify_token(token, keys) do
     Enum.find_value(keys, :error, fn key ->
       case JOSE.JWT.verify(key, token) do
-        {_, token, _s} -> {:ok, token}
+        {true, token, _s} -> {:ok, token}
         _ -> nil
       end
     end)

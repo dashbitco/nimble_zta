@@ -161,6 +161,20 @@ defmodule NimbleZTA.CloudflareTest do
 
   @tag token: @service_token_based_signed_jwt,
        bypass: &__MODULE__.router_with_service_token_auth/2
+  test "returns nil when the service token signature is invalid", %{
+    options: options,
+    token: token
+  } do
+    [header, payload, signature] = String.split(token, ".")
+    invalid_token = Enum.join([header, payload, String.duplicate("A", byte_size(signature))], ".")
+    conn = conn(:get, "/") |> put_req_header("cf-access-jwt-assertion", invalid_token)
+    start_supervised!({Cloudflare, options})
+
+    assert {_conn, nil} = Cloudflare.authenticate(@name, conn)
+  end
+
+  @tag token: @service_token_based_signed_jwt,
+       bypass: &__MODULE__.router_with_service_token_auth/2
   test "returns nil when the service token is invalid", %{options: options} do
     conn = conn(:get, "/") |> put_req_header("cf-access-jwt-assertion", "invalid_token")
     start_supervised!({Cloudflare, options})
